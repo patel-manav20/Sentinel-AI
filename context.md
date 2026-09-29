@@ -19,10 +19,14 @@ Sentinel AI was built by the whole team working together, and everyone contribut
 | **Indraneel** | Voice alerts with ElevenLabs (`services/voice/`), benchmarks (`bench/`) |
 | **Everyone** | Docker Compose, Makefile, integration, docs (`docs/`, README), demo & presentation |
 
-## Status
-- **Done:** live pipeline end to end (vision → Qwen → decision gate → console → call), cross-camera tracking with one call per incident, live SignalWire calls with ElevenLabs voice, security console (Live Operations, Incidents, Call Console, System, site map), fresh-run Reset, SQLite history, demo video recorded, README and rebrand.
-- **In progress:** confirm ElevenLabs on a real call; web cache-tag and browser checks (see Next). <!-- TODO: confirm what is actively being worked on -->
-- **Next:** see the table at the end.
+## Status: complete
+Sentinel AI was built and demoed at Edge AI SJSUHack 2026. Everything below describes the finished system.
+- **Pipeline:** vision → Qwen3-VL → decision gate → console → phone call, end to end on the ZGX Nano.
+- **Tracking:** cross-camera handoffs (Camera 1 → 2 → 3) with one call per incident, updated live.
+- **Calls:** live SignalWire calls with ElevenLabs voice and local speech recognition.
+- **Console:** Live Operations wall, Incidents, Call Console, System page, and the SJSU site map.
+- **Operations:** fresh-run Reset, SQLite history, measured health strip.
+- **Delivered:** demo video, README, and the Sentinel AI rebrand.
 
 ## Contract decision (2026-09-24)
 - **IncidentClass:** `FALL` → **`WEAPON`**. Set: `WEAPON | FIGHT | THEFT | RUN | MEDICAL | BENIGN`. IncidentRecord **schema_version 1.1**.
@@ -98,15 +102,17 @@ python3 -m http.server 8090 --bind 0.0.0.0 --directory web
 - Brain temperature calibration is plumbed but off (`CS_CALIB_LOG`, `scripts/fit_temperature.py`, `CS_VLM_TEMPERATURE`); no labelled data yet.
 - Deployment is Docker Compose. Playbook is the original plan (`PLAYBOOK.md`); `AUDIT.md` has the step table.
 
-## Next
-| Area | What |
-|------|------|
-| Voice | Confirm ElevenLabs on a real call; watch the 10,000 chars/month free tier |
-| Vision | Weapon boxes are pre-computed; swap in a live detector if one can see small handguns |
-| Open ML | `docs/OPEN_ML_ITEMS.md`: OSNet re-id (stub, no callers), temperature calibration (needs labelled rows), MediaMTX (optional) |
-| Web | Browser-test the SignalWire wiring against the live API; run `node web/check.mjs` (no node on ZGX) |
-| Web | Bump `?v=` tags for `store.js`, `transport.js`, `actions.js`, `modelStatus.js`, `ui/call.js`, `ui/operator.js`, `ui/cameras.js` <!-- TODO: confirm still pending --> |
-| Web | ZGX had uncommitted `live.js`/`app.css` leader-line changes; commit or drop <!-- TODO: confirm still pending --> |
-| Web | Ambient cam-04..06 only rewind on the dashboard that pressed Reset; load `GET /api/site` instead of the duplicated map in `site.js` |
-| Build | `make demo` and `make reset` only print steps, `make bench` is not wired, and `make demo` suggests web on `:8000`, which clashes with ZRT (use `:8090`) |
-| Repo | Pick a license; confirm the mock-attack dataset license before wider sharing |
+## Known limitations
+| Area | Limitation |
+|------|------------|
+| Vision | Weapon boxes are pre-computed from the dataset's labels; no live detector we tried could see small handguns reliably |
+| Voice | ElevenLabs free tier is 10,000 characters/month; a local backup voice covers failures |
+| Web | Ambient cam-04..06 only rewind on the dashboard that pressed Reset; `site.js` duplicates the camera map instead of loading `GET /api/site` |
+| Build | `make demo` and `make reset` only print steps, `make bench` is not wired, and `make demo` mentions web on `:8000` (use `:8090`; ZRT owns `:8000`) |
+| Accuracy | Detection accuracy was not measured; thresholds are demo settings |
+
+## Future ideas
+- Live weapon detector that sees small handguns, replacing the pre-computed timeline.
+- OSNet appearance re-id, temperature calibration and MediaMTX for real RTSP cameras (see `docs/OPEN_ML_ITEMS.md`).
+- More incident types (e.g. fire and smoke) using the same pipeline.
+- Pick a license and confirm the mock-attack dataset license before wider sharing.
