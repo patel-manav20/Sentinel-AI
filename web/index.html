@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' http: https: ws: wss:; img-src 'self' http: https: data: blob:; media-src 'self' http: https: blob:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'"
+    />
+    <title>Sentinel · Security Console</title>
+    <link rel="icon" href="./assets/logo.png" type="image/png" />
+    <link rel="stylesheet" href="./css/tokens.css?v=pro7" />
+    <link rel="stylesheet" href="./css/app.css?v=pro8" />
+    <link rel="stylesheet" href="./css/activity.css?v=pro7" />
+    <script src="./js/boot.js?v=pro8"></script>
+  </head>
+  <body class="has-splash">
+    <div
+      id="splash"
+      class="splash"
+      role="status"
+      aria-label="Sentinel loading"
+      aria-live="polite"
+    >
+      <div class="splash__inner">
+        <img
+          class="logo-mark splash__logo"
+          src="./assets/logo.png"
+          width="56"
+          height="56"
+          alt=""
+          decoding="async"
+        />
+
+        <p class="splash__word" aria-label="SENTINEL">
+          <span class="splash__dia">SENTINEL</span>
+        </p>
+
+        <p class="splash__tagline">Where AI Meets Security.</p>
+
+        <div class="splash__progress" aria-hidden="true">
+          <div class="splash__progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div id="app">
+      <header id="topbar"></header>
+      <div id="banner" role="alert" aria-live="assertive" hidden></div>
+      <main id="main" tabindex="-1">
+        <section
+          id="page-live"
+          class="page page--live is-active"
+          data-page="live"
+          aria-label="Live Operations"
+        >
+          <div class="live-banner" data-live-banner role="region" aria-label="Current incident"></div>
+          <aside class="live-col live-col--left" data-live-left aria-label="Incidents"></aside>
+          <div class="live-centre" data-live-centre>
+            <div class="live-stage">
+              <div id="cameras"></div>
+            </div>
+            <div class="live-track" data-live-track></div>
+            <div class="live-activity" data-live-activity></div>
+          </div>
+          <aside class="live-col live-col--right" data-live-right aria-label="Site plan and call"></aside>
+          <aside id="call-float" hidden></aside>
+          <aside id="sidebar" hidden></aside>
+        </section>
+
+        <section
+          id="page-incidents"
+          class="page page--incidents"
+          data-page="incidents"
+          aria-label="Incidents"
+          hidden
+        >
+          <div id="incidents-list"></div>
+          <div id="incidents-detail"></div>
+        </section>
+
+        <section
+          id="page-call"
+          class="page page--call"
+          data-page="call"
+          aria-label="Call Console"
+          hidden
+        >
+          <div id="call-page"></div>
+        </section>
+
+        <section
+          id="page-system"
+          class="page page--system"
+          data-page="system"
+          aria-label="System"
+          hidden
+        >
+          <div id="system"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="map-expand" hidden></div>
+    <div id="demo" aria-hidden="true"></div>
+    <div id="dismiss" aria-hidden="true" hidden></div>
+    <div id="op-dialog" aria-hidden="true" hidden></div>
+
+    <script type="module" src="./js/main.js?v=pro8"></script>
+  </body>
+</html>
