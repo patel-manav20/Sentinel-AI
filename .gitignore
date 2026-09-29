@@ -1,0 +1,49 @@
+._*
+.DS_Store
+data/clips/*
+!data/clips/.gitkeep
+services/vision/weights/
+*.pt
+*.engine
+*.onnx
+*.safetensors
+*.bin
+.env
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+node_modules/
+logs/
+data/runtime/
+
+# secrets
+.env.*
+!.env.example
+*.pem
+*.key
+# model weights
+*.pth
+*.gguf
+*.ckpt
+# media (demo clips live outside the repo)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wav
+*.mp3
+# envs, builds, editors, logs
+venv/
+dist/
+build/
+.cache/
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
+tmp/
+*.db
+*.sqlite
