@@ -550,6 +550,11 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 ## 🙏 Acknowledgments
 
+<p align="center">
+  <img src="docs/assets/sjsu-x-hp.png" alt="San José State University × HP" width="640">
+  <br><sub>Built at San José State University with HP hardware and software.</sub>
+</p>
+
 - **Edge AI SJSUHack 2026** and San José State University, for the challenge and the campus that inspired it
 - **HP**, for the **ZGX Nano AI Station** and **HP Z Runtime**, which made local AI possible
 - **NVIDIA**, for the GB10 chip inside the ZGX Nano
