@@ -1,7 +1,4 @@
 # context.md
-Last updated: 2026-09-28 - simple team ownership, Indraneel added, status refresh
-
-Living state of **Sentinel AI** (formerly Campus Sentinel, Edge AI SJSUHack 2026). More current than the playbook; read this before you start and update it with your work.
 
 ## Git rules
 1. `git pull --rebase origin main` before every push.
