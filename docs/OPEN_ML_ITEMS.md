@@ -1,41 +1,48 @@
-# Open items: OSNet, temperature calibration, MediaMTX
+# Known limitations and future work
 
-Status as of 2026-09-25. Owner: Ayush (open). None of these block the demo.
+Sentinel AI was built and demoed at Edge AI SJSUHack 2026. This page lists what the finished system does **not** do yet and how each piece could be added. None of it is needed to run the demo.
 
-## 1. OSNet re-id weights: not wired, needs more than a weights file
+## Known limitations
 
-**Today:** `services/vision/osnet.py` is a stub. It hashes the camera, track ID and bbox geometry into a 16-hex digest, and `affinity()` compares digest prefixes. **Nothing imports it.** Cross-camera continuity in the demo comes from the configured Camera 1 to 2 to 3 windows and handoffs, not from appearance. No OSNet weights exist in `services/vision/weights/` (only `yolo26s-pose.pt` and `clip-vit-b-16.pt`), and `pull_weights.py` has no OSNet entry.
+| Area | Limitation |
+|---|---|
+| **Weapon detection** | Weapon boxes in the demo are pre-computed. Small handguns in 960×540 footage were not detected reliably live: per-person CLIP missed a visible handgun, YOLOE-26 never scored a weapon above 0.35, full-frame Qwen3-VL takes 1–2.7 s per frame, and Qwen on per-person crops hallucinated knives. So `data/feeds/seville_weapon_timeline.json` replays the dataset's hand-drawn weapon boxes by clip time. People, tracking, escalation and Qwen classification stay live. |
+| **Accuracy** | Detection accuracy has not been measured. The severity thresholds in `bench/thresholds.json` are demo settings, not tuned on labelled data. |
+| **Cross-camera matching** | Handoffs follow the camera map (Camera 1 → 2 → 3), not what the person looks like. |
+| **Cameras** | The demo reads recorded MP4 clips. Real RTSP cameras are not wired in. |
+| **Voice** | The ElevenLabs free tier allows 10,000 characters per month. A local backup voice covers slow or failed requests. |
 
-**Needed to make it real:**
-1. Model code. `torchreid` is not installed in `services/vision/.venv` (`timm`, `torchvision` and `open_clip` are), and timm has no OSNet. Either vendor torchreid's `osnet.py` (MIT, about 600 lines) or add `torchreid` as a dependency (group decision).
-2. Weights: `osnet_x0_25_msmt17` (about 1 MB) or `osnet_x1_0_msmt17` (about 9 MB). Add a `pull_osnet()` to `pull_weights.py`. Both are far below the 1 GB download limit.
-3. A crop path. `pipeline.py` must crop each tracked person from the decoded frame (256x128), embed on CPU or CUDA once per track per N frames, and store an L2-normalised 512-d vector on the `Track`.
-4. A consumer. Cosine similarity between the last track on camera N and new tracks on camera N+1 should gate the handoff in `api/vision_bridge.py` (threshold about 0.6, tune on the Seville clips). Replace the `AppearanceVec.digest` API with the vector and keep `affinity()` returning [0, 1].
-5. GB10 budget. Keep it CPU-only or batch it after YOLO; do not add a resident GPU model alongside Qwen at 0.40 without checking `docs/STABILITY.md`.
+## Future work
 
-## 2. Temperature calibration: machinery landed, no data to fit yet
+### 1. Live weapon detector
+Replace the pre-computed timeline with a model that can see small handguns in low-resolution CCTV. Examples are a detector fine-tuned on weapon datasets, or running at a higher input resolution on the armed person's crop. `services/vision/weapon_timeline.py` shows exactly where its output plugs in: mark the tracked person holding the weapon, and the existing `weapon` rule escalates.
 
-**Today:** Live `ZRTClient.classify` requests `logprobs` and keeps only the first class token's logprob. Most demo runs use the forced path (`logprob=0`, confidence fixed), so there are no recorded live classifications and no labels to fit on. `AuditLog` is in memory only.
+### 2. Appearance re-identification (OSNet)
+**Today:** `services/vision/osnet.py` is a stub. It hashes camera, track ID and box geometry into a digest, and nothing calls it.
 
-**Landed (default off, no behaviour change at defaults):**
-- `CS_CALIB_LOG=/path/calib.jsonl` appends one row per non-forced classification: `incident_id, camera_id, track_id, class_token, logprob, ts`.
-- `scripts/fit_temperature.py calib.jsonl` fits one temperature T for `sigmoid(logit(p)/T)` on "was the class right?" (NLL, stdlib golden-section) and prints NLL and ECE before and after. `--selftest` recovers a known T=3 on synthetic data.
-- `CS_VLM_TEMPERATURE=<T>` applies it in `adjudicate()` before fusion. It defaults to 1.0, which is the identity.
+**To make it real:**
+1. **Model code:** vendor torchreid's `osnet.py` (MIT, about 600 lines) or add `torchreid` as a dependency.
+2. **Weights:** add `osnet_x0_25_msmt17` (about 1 MB) or `osnet_x1_0_msmt17` (about 9 MB) to `services/vision/pull_weights.py`.
+3. **Crop path:** in `pipeline.py`, crop each tracked person (256×128), embed once every N frames, and store a normalised 512-d vector on the track.
+4. **Consumer:** gate handoffs in `services/api/vision_bridge.py` on cosine similarity between the last track on camera N and new tracks on camera N+1 (start around 0.6, then tune).
+5. **GPU budget:** keep it on CPU or batch it after YOLO. Don't add another resident GPU model next to Qwen without checking [`STABILITY.md`](./STABILITY.md).
 
-**Needed:**
-1. Run the live (non-forced) classify over labelled clips with `CS_CALIB_LOG` set. This needs ZRT/Qwen, so follow the Runtime rules. Aim for 100 or more rows across classes, including BENIGN.
-2. Have a human add `"label": "<TRUE_CLASS>"` to each row.
-3. Run the fit script and set the printed `CS_VLM_TEMPERATURE` in `.env`. Re-check `thresholds.py` severity cut-offs after calibration.
-4. Caveat: Qwen may split class tokens such as `WEAPON` into sub-tokens, so the first-token logprob is only a proxy. Full-class temperature scaling would need per-class sequence logprobs, which means scoring six completions per clip.
+### 3. Confidence calibration
+**Today:** Qwen's class confidence comes from token logprobs, used raw. The calibration plumbing is built but off by default:
+- `CS_CALIB_LOG=<file>.jsonl` logs one row per live classification.
+- `scripts/fit_temperature.py <file>.jsonl` fits a temperature T and prints NLL and ECE before and after. `--selftest` recovers a known T on synthetic data.
+- `CS_VLM_TEMPERATURE=<T>` applies it in `services/brain/adjudicate.py` (1.0 means no change).
 
-## 3. MediaMTX (optional): document only
+**To finish:** run live classification over labelled clips with logging on (100+ rows across all classes, including BENIGN), add a `"label"` to each row, fit T, and re-check the thresholds. Caveat: Qwen may split a class name like `WEAPON` into several tokens, so the first-token logprob is only a proxy.
 
-**Today:** `services/mediamtx/mediamtx.yml` defines RTSP publisher paths `cam01`..`cam06` on `:8554`. `docker-compose.yml` has a `mediamtx` service under the `full` profile. Nothing publishes to it and nothing reads from it. `FileSource` in `services/vision/decode.py` reads local MP4s and owns the demo sync: active-camera windows, rewind to t=0 on the first MJPEG, `shift_wall` and reset rewinds. Ambient cam-04..06 are served as byte-range MP4 by the API.
+### 4. Real cameras through MediaMTX
+**Today:** `services/mediamtx/mediamtx.yml` defines RTSP paths `cam01`–`cam06` on `:8554` (`docker compose --profile full up mediamtx`), but nothing publishes to it or reads from it. `FileSource` in `services/vision/decode.py` reads the demo MP4s and handles demo sync and Reset.
 
-**Needed if adopted:**
-1. Publishers: one `ffmpeg -re -stream_loop -1 -i <clip> -c copy -f rtsp rtsp://127.0.0.1:8554/camNN` per camera (tmux or compose), or real cameras pushing to the same paths.
-2. An `RtspSource` in `decode.py` with the `next_frames()` / `rewind()` / `close()` shape. `cv2.VideoCapture("rtsp://...")` works, but `rewind()` and window-following cannot seek a live stream. Demo reset and overlay sync would have to restart the publishers or accept live-edge semantics.
-3. Pin the image tag (`bluenviron/mediamtx:latest` is unpinned) and keep it LAN or Tailscale only.
-4. The dashboard would still need MJPEG or HLS/WebRTC for browsers. The config currently disables HLS and WebRTC.
+**To adopt:**
+1. **Publishers:** real cameras push to those paths, or for testing, `ffmpeg -re -stream_loop -1 -i <clip> -c copy -f rtsp rtsp://127.0.0.1:8554/camNN`.
+2. **Reader:** add an `RtspSource` to `decode.py` with the same `next_frames()` / `rewind()` / `close()` shape. A live stream can't be rewound, so Reset would work from the live edge.
+3. **Hardening:** pin the image tag (currently `latest`) and keep the RTSP port on the local network only.
+4. **Browser playback:** the dashboard still needs MJPEG, HLS or WebRTC. HLS and WebRTC are off in the current config.
 
-Recommendation: keep FileSource for the demo. MediaMTX only matters for real cameras.
+### 5. More incident types
+The pipeline already classifies `WEAPON | FIGHT | THEFT | RUN | MEDICAL | BENIGN`. Adding a type such as fire and smoke means a new class token, a matching rule, and a severity entry. The rest of the pipeline stays the same.

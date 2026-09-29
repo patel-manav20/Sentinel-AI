@@ -221,7 +221,7 @@ These are real measurements taken on the HP ZGX Nano during the hackathon (sampl
 | 🎯 Weapon labels lined up with the demo video | **640 of 649** frames matched |
 | 📹 Cameras on the demo wall | **6** (3 running full AI analysis, 3 background feeds) |
 
-> **Honest note:** We have not measured detection accuracy yet. The alert thresholds are demo settings, not tuned on labelled data (see [`bench/thresholds.json`](./bench/thresholds.json) and [`docs/OPEN_ML_ITEMS.md`](./docs/OPEN_ML_ITEMS.md)).
+> **Honest note:** We have not measured detection accuracy yet. The alert thresholds are demo settings, not tuned on labelled data (see [`bench/thresholds.json`](./bench/thresholds.json)). Everything the system doesn't do yet is listed in [Known limitations and future work](./docs/OPEN_ML_ITEMS.md).
 
 ---
 
