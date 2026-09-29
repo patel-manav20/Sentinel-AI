@@ -1,6 +1,6 @@
 /**
  * The AI models the pipeline actually runs, one source for the header card
- * and the System page. Names are as served (see services/ and context.md);
+ * and the System page. Names are as served (see services/);
  * add a row here only when the model is in use.
  *
  * `status` names where a row's readiness comes from (see modelStatus.js):

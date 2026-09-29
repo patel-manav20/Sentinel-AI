@@ -210,7 +210,7 @@ sequenceDiagram
 
 ## 📊 Results
 
-These are real measurements from our team's notes ([`context.md`](./context.md), [`bench/`](./bench/)), taken on the HP ZGX Nano during the hackathon.
+These are real measurements taken on the HP ZGX Nano during the hackathon (sample data in [`bench/`](./bench/)).
 
 | What we measured | Result |
 |---|---|
@@ -420,9 +420,6 @@ flowchart LR
 ├── scripts/            Timeline builders, speech servers, GB10 preflight, perf probe, calibration fit
 ├── bench/              Severity thresholds and the latest performance sample
 ├── docs/               Stability notes, open ML items, clip notes, design docs, README assets
-├── context.md          Living project state. Read this first.
-├── AUDIT.md            Architecture audit against the plan
-├── PLAYBOOK.md         Pointer to the original build plan (campus-sentinel-playbook.html)
 ├── docker-compose.yml  One machine, one compose file
 ├── Makefile            Shortcuts: api, check, up, demo, reset
 └── .env.example        Settings template. Copy to .env on the box and never commit it.
@@ -507,7 +504,7 @@ python3 -m http.server 8090 --bind 0.0.0.0 --directory web
 # open http://<box>:8090/?ws=ws://<box>:8080/ws   (add &nosplash=1 to skip the intro)
 ```
 
-More settings (`CS_CALL_MODE`, `CS_MEDIA_ROOT`, `CS_DB_PATH`, and others) are documented in [`.env.example`](./.env.example) and [`context.md`](./context.md).
+More settings (`CS_CALL_MODE`, `CS_MEDIA_ROOT`, `CS_DB_PATH`, and others) are documented in [`.env.example`](./.env.example).
 
 </details>
 
@@ -523,7 +520,7 @@ Video files and model weights are **never committed**. The demo clips live next 
 | Camera IDs and locations (in repo) | [`data/camera_map.json`](./data/camera_map.json) |
 | Research originals (tmp, do not stream) | `/home/hp25/tmp/campus_sentinel_clip_research/` |
 
-- **Mac mount:** `~/mnt/zgx-b505/Documents/campus_sentinel_media/...` (SSHFS via `zgx-up`, see `context.md`)
+- **Mac mount:** `~/mnt/zgx-b505/Documents/campus_sentinel_media/...` (SSHFS mount of the ZGX home folder via the team's `zgx-up` helper)
 - **Override:** `CS_MEDIA_ROOT` points the API at a different clip folder
 - **Model weights:** stay in `services/vision/weights/` (gitignored). Qwen is pulled and cached by HP Z Runtime.
 
@@ -539,12 +536,11 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 ## 🤝 Contributing
 
-1. **Read first:** [`context.md`](./context.md) is the living state of the project and is more current than [`PLAYBOOK.md`](./PLAYBOOK.md).
+1. **Read first:** the [For developers](#%EF%B8%8F-for-developers) section above and [`docs/STABILITY.md`](./docs/STABILITY.md) before running anything on the GB10.
 2. **Contracts are shared:** changes to `contracts/` need the whole team's agreement.
 3. **Branch:** `feat/<name>/<thing>`, and merge the same day.
 4. **Sync:** run `git pull --rebase origin main` before every push.
-5. **Log it:** update `context.md` in the same commit as your work.
-6. **Never commit** model weights, video clips, API keys, or `.env`. Mock CCTV MP4s belong only under `Documents/campus_sentinel_media/`, next to this repo and never inside it.
+5. **Never commit** model weights, video clips, API keys, or `.env`. Mock CCTV MP4s belong only under `Documents/campus_sentinel_media/`, next to this repo and never inside it.
 
 ---
 
